@@ -27,9 +27,9 @@ Readme
 	DataV1-Girls-IncludeMissing
 	DataV2-Girls-OmitMissing
 /OLS
-	Same
+	...
 /IV-EffectSizes
-	Same
+	...
 /OLS-EffectSizes
 	...
 /Summary
@@ -42,34 +42,50 @@ Readme
 
 pause on
 
-* SWITCHES (1 if run, else not run)
-global zscores        0
-global OLS            0
-global IV             0
-global subsamples     0
-global fullcontrols   1
-global fixmissing1    1
-global evalmissing    0
-global sumstats       0
-global graphs         0
+* Repeat for data versions
+foreach v in V1 V2{
+	* SWITCHES (1 if run, else not run)
+	* Create DataV1, create sumstats
+	* OLS and IV, OmitMissing
+	global zscores        0
+	global OLS            0
+	global IV             0
+	global subsamples     0
+	global fullcontrols   0
+	global fixmissing1    0
+	global evalmissing    0
+	global sumstats       1
+	global graphs         0
+	global fastTesting    0
+	global recreateData   1
+	global dataV          `v'
+	do "QQ-Regressions.do"
 
-do "QQ-Regressions.do"
-pause
+	* Repeat for DHSControlsOnly
+	foreach fullcontrols in numlist 0 1 {
+		*OLS and IV, OmitMissing
+		global fullcontrols   `fullcontrols'
+		global OLS            1
+		global IV             1
+		do "QQ-Regressions.do"
 
-* SWITCHES (1 if run, else not run)
-global zscores        0
-global OLS            0
-global IV             0
-global subsamples     0
-global fullcontrols   0
-global fixmissing1    0
-global evalmissing    0
-global sumstats       0
-global graphs         0
+		* OLS and IV, IncludeMissing
+		global sumstats       0
+		global fixmissing1    1
+		global recreateData   0
+		do "QQ-Regressions.do"
 
-do "QQ-Regressions.do"
-pause
+		* EffectSizes, OLS and IV, OmitMissing
+		global zscores        1
+		global fixmissing1    0
+		do "QQ-Regressions.do"
+
+		* EffectSizes, OLS and IV, IncludeMissing
+		global zscores        1
+		global fixmissing1    1
+		do "QQ-Regressions.do"
+	}
+}
 
 di "Complete"
-
 
