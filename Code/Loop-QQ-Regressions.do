@@ -48,10 +48,10 @@ foreach v in V1 V2{
 	* Create DataV1, create sumstats
 	* OLS and IV, OmitMissing
 	global zscores        0
-	global OLS            0
-	global IV             0
+	global OLS            1
+	global IV             1
 	global subsamples     0
-	global fullcontrols   0
+	global fullcontrols   1
 	global fixmissing1    0
 	global evalmissing    0
 	global sumstats       1
@@ -62,7 +62,7 @@ foreach v in V1 V2{
 	do "QQ-Regressions.do"
 
 	* Repeat for DHSControlsOnly
-	foreach fullcontrols in numlist 0 1 {
+	foreach fullcontrols in 0 1 {
 		*OLS and IV, OmitMissing
 		global fullcontrols   `fullcontrols'
 		global OLS            1
@@ -74,17 +74,19 @@ foreach v in V1 V2{
 		global fixmissing1    1
 		global recreateData   0
 		do "QQ-Regressions.do"
-
-		* EffectSizes, OLS and IV, OmitMissing
-		global zscores        1
-		global fixmissing1    0
-		do "QQ-Regressions.do"
-
-		* EffectSizes, OLS and IV, IncludeMissing
-		global zscores        1
-		global fixmissing1    1
-		do "QQ-Regressions.do"
 	}
+	
+	* We only estimate effectsizes for fullcontrols==1
+	* EffectSizes, OLS and IV, OmitMissing
+	global fullcontrols   1
+	global zscores        1
+	global fixmissing1    0
+	do "QQ-Regressions.do"
+
+	* EffectSizes, OLS and IV, IncludeMissing
+	global zscores        1
+	global fixmissing1    1
+	do "QQ-Regressions.do"
 }
 
 di "Complete"
