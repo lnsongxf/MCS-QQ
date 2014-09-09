@@ -32,6 +32,10 @@ print('\n\nHey. The script is making %s files \n' %(ftype))
 Results  = "/Users/pedm/Documents/jobs/Damian-Clarke/Results/Outreg/"
 Tables   = "/Users/pedm/Documents/jobs/Damian-Clarke/Tables/"
 
+QDataVs = ["DataV2", "DataV1"]
+QVars = ["Verbal Similarities", "Number Skills", "Word Reading", "Pattern Construction", "Help Reading Freq", "Help Writing Freq", "Proactive School Selection"]
+QRows = ["All IncludeMissing", "All OmitMissing", "Girls IncludeMissing", "Girls OmitMissing", "Boys IncludeMissing", "Boys OmitMissing"]
+
 base = 'All.xls'
 lowi = 'LowIncome.xls'
 midi = 'MidIncome.xls'
@@ -218,9 +222,6 @@ pprint(TN1)
 #== (3b) Alternate table Full IVResults
 #==============================================================================
 os.chdir(Results+'IV-EffectSizes')
-QDataVs = ["DataV2", "DataV1"]
-QVars = ["Verbal Similarities", "Number Skills", "Word Reading", "Pattern Construction"]
-QRows = ["All IncludeMissing", "All OmitMissing", "Girls IncludeMissing", "Girls OmitMissing", "Boys IncludeMissing", "Boys OmitMissing"]
 
 IV2 = open(Tables+"IV-Together."+end, 'w')
 for QDataV in QDataVs:

@@ -39,12 +39,30 @@ Readme
 	...
 
 */
-
+clear
 set memory 100000
 pause on
 
+
+
+* We only estimate effectsizes for fullcontrols==1
+* EffectSizes, OLS and IV, OmitMissing
+global fullcontrols   1
+global zscores        1
+global fixmissing1    0
+do "QQ-Regressions.do"
+
+* EffectSizes, OLS and IV, IncludeMissing
+global zscores        1
+global fixmissing1    1
+do "QQ-Regressions.do"
+
+
+
+
 * Repeat for data versions
-foreach v in V1 V2{
+*foreach v in V1 V2{
+foreach v in V2{
 	* SWITCHES (1 if run, else not run)
 	* Create DataV1, create sumstats
 	* OLS and IV, OmitMissing
