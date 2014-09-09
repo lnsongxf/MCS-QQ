@@ -40,6 +40,7 @@ Readme
 
 */
 
+set memory 100000
 pause on
 
 * Repeat for data versions
@@ -60,6 +61,13 @@ foreach v in V1 V2{
 	global recreateData   1
 	global dataV          `v'
 	do "QQ-Regressions.do"
+	
+	* Repeat sumstats for IncludeMissing
+	global recreateData   0
+	global sumstats       1
+	global fixmissing1    1
+	do "QQ-Regressions.do"
+	global sumstats       0
 
 	* Repeat for DHSControlsOnly
 	foreach fullcontrols in 0 1 {

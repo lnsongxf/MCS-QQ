@@ -232,13 +232,13 @@ for QDataV in QDataVs:
 		    "\\begin{tabular}{lcccp{2mm}cccp{2mm}ccc}\n\\toprule \\toprule \n"
 		    "&\\multicolumn{3}{c}{2+}&&\\multicolumn{3}{c}{3+}&&\\multicolumn{3}{c}{4+}"
 		    "\\\\ \\cmidrule(r){2-4} \\cmidrule(r){6-8} \\cmidrule(r){10-12} \n"
-		    "\\textsc{" + QVar + " Z-Score}&Base&+S&+S\&H&&Base&+S&+S\&H&&Base&+S&+S\&H"
+		    "\\textsc{" + QVar + " Z-Score}&Base&+H&+S\&H&&Base&+H&+S\&H&&Base&+H&+S\&H"
 		    "\\\\ \\midrule \n"
 		    +"\\begin{footnotesize}\\end{footnotesize}& \n"*11+
 		    "\\begin{footnotesize}\\end{footnotesize}\\\\ \n")
 		elif ftype=='csv':
 		    IV2.write(";2+;;;;3+;;;;4+;;;\n"
-		    "FERTILITY;Base;+S;+S&H;;Base;+S;+S&H;;Base;+S;+S&H \n")
+		    "FERTILITY;Base;+H;+H&S;;Base;+H;+H&S;;Base;+H;+H&S \n")
 
 		for QRow in QRows:
 			AllB = []
