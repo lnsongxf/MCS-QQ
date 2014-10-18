@@ -1,9 +1,9 @@
 clear all
 set memory 100000
-use ${directory}Intermediate\natural_children_of_CM_mom_wave1.dta, clear
+use ${directory}Intermediate/natural_children_of_CM_mom_wave1.dta, clear
 gen wave = 1
 foreach num in 2 3 4 5 {
-	append using ${directory}Intermediate\natural_children_of_CM_mom_wave`num'.dta
+	append using ${directory}Intermediate/natural_children_of_CM_mom_wave`num'.dta
 	replace wave = `num' if wave == .
 }
 
@@ -61,14 +61,14 @@ label var agefirstbirth "Mother Age at First Birth (composite) Uses Natural Chil
 
 preserve
 keep MCSID PNUM P_DOB_M P_DOB_Y Mother_DOB_M Mother_DOB_Y
-save ${directory}Intermediate\natural_children_of_natural_mother_composite.dta, replace
+save ${directory}Intermediate/natural_children_of_natural_mother_composite.dta, replace
 restore
 
 
 keep MCSID agefirstbirth
 duplicates drop
 sort MCSID
-save ${directory}Intermediate\agefirstbirth_composite.dta, replace
+save ${directory}Intermediate/agefirstbirth_composite.dta, replace
 
 
 /*
