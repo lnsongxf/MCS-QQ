@@ -11,7 +11,7 @@
 vers 10.1 
 clear all
 set more off
-global directory \Users\pedm\Documents\jobs\Damian-Clarke\Data\
+global directory /Users/pedm/Documents/jobs/Damian-Clarke/Data/
 
 *=================================================================================
 * Section 1: Loop over Waves 1 and 2
@@ -20,7 +20,7 @@ global directory \Users\pedm\Documents\jobs\Damian-Clarke\Data\
 
 foreach num in 1 2 3 4 {
 	if `num' == 1{
-		local HHGrid "${directory}Raw\MCS-Survey-1\stata9\mcs1_hhgrid.dta"
+		local HHGrid "${directory}Raw/MCS-Survey-1/stata9/mcs1_hhgrid.dta"
 		local prefix AH
 		local loopend K
 	}
@@ -80,7 +80,7 @@ foreach num in 1 2 3 4 {
 		duplicates report MCSID
 */
 
-	save ${directory}Intermediate\temp.dta, replace
+	save ${directory}Intermediate/temp.dta, replace
 
 	sort MCSID
 	merge MCSID using `HHGrid'
@@ -96,7 +96,7 @@ foreach num in 1 2 3 4 {
 
 	sort Nat_Mom_No MCSID
 
-	save ${directory}Intermediate\temp1.dta, replace
+	save ${directory}Intermediate/temp1.dta, replace
 
 	*Erasing all values from relationship to person 1-11 (A-K)
 	local counter = 1
@@ -121,7 +121,7 @@ foreach num in 1 2 3 4 {
 
 	*Save now, to use again for finding birth order of CM and birth order of later twins
 	*But, use HHGrid 5
-	save ${directory}Intermediate\natural_children_of_CM_mom_wave`num'.dta, replace
+	save ${directory}Intermediate/natural_children_of_CM_mom_wave`num'.dta, replace
 
 	* Drop "Dont know" observations
 	drop if P_DOB_Y < 0 | P_DOB_M < 0
@@ -169,23 +169,23 @@ foreach num in 1 2 3 4 {
 
 	keep MCSID agefirstbirth
 	duplicates drop
-	save ${directory}Intermediate\agefirstbirth_wave`num'.dta, replace
+	save ${directory}Intermediate/agefirstbirth_wave`num'.dta, replace
 }
 
 *=================================================================================
 * Section 6: Combine agefirstbirth from waves 1 - 4
 *=================================================================================
-use ${directory}Intermediate\agefirstbirth_wave1.dta, clear
+use ${directory}Intermediate/agefirstbirth_wave1.dta, clear
 gen wave = 1
-append using ${directory}Intermediate\agefirstbirth_wave2.dta
+append using ${directory}Intermediate/agefirstbirth_wave2.dta
 replace wave = 2 if wave == .
 
 * Perhaps I should merge together the list of natural children, remove duplicates and any without DOB
 * That will prevent the different age calculations I'm finding
 
-*append using ${directory}Intermediate\agefirstbirth_wave3.dta
+*append using ${directory}Intermediate/agefirstbirth_wave3.dta
 *replace wave = 3 if wave == .
-*append using ${directory}Intermediate\agefirstbirth_wave4.dta
+*append using ${directory}Intermediate/agefirstbirth_wave4.dta
 *replace wave = 4 if wave == .
 
 /*
@@ -199,4 +199,4 @@ duplicates drop MCSID, force
 sort MCSID
 tab wave
 drop wave
-save ${directory}Intermediate\agefirstbirth.dta, replace
+save ${directory}Intermediate/agefirstbirth.dta, replace
