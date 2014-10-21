@@ -42,7 +42,7 @@ Readme
 clear
 set memory 100000
 pause on
-
+cd /Users/pedm/Documents/jobs/Damian-Clarke/Code
 
 
 * We only estimate effectsizes for fullcontrols==1
@@ -57,12 +57,9 @@ global zscores        1
 global fixmissing1    1
 do "QQ-Regressions.do"
 
-
-
-
 * Repeat for data versions
-*foreach v in V1 V2{
-foreach v in V2{
+foreach v in V1 V2{
+*foreach v in V2{
 	* SWITCHES (1 if run, else not run)
 	* Create DataV1, create sumstats
 	* OLS and IV, OmitMissing
@@ -76,7 +73,8 @@ foreach v in V2{
 	global sumstats       1
 	global graphs         0
 	global fastTesting    0
-	global recreateData   1
+	global recreateData   0
+	* global recreateData   1
 	global dataV          `v'
 	do "QQ-Regressions.do"
 	
