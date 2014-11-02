@@ -37,10 +37,9 @@ tab _merge
 drop if EAOUTC00 != 1
 * We have 22,127 observations (if including surveys 1-4)
 
-
 * DONE - Next steps: include survey 5
 * DONE - Make P_DOB consistent across surveys
-keep MCSID PNUM P_DOB_M P_DOB_Y Mother_DOB_M Mother_DOB_Y
+keep MCSID PNUM P_DOB_M P_DOB_Y Mother_DOB_M Mother_DOB_Y PSEX
 * ^^^ note. those without PNUM are CM
 * now only 110 or 111 people without DOB
 
@@ -63,7 +62,6 @@ preserve
 keep MCSID PNUM P_DOB_M P_DOB_Y Mother_DOB_M Mother_DOB_Y
 save ${directory}Intermediate/natural_children_of_natural_mother_composite.dta, replace
 restore
-
 
 keep MCSID agefirstbirth
 duplicates drop
