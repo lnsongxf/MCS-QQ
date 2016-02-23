@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: genderQQ.aux
+The style file: ecta.bst
+Database file #1: ./refs.bib
+You've used 1 entry,
+            2849 wiz_defined-function locations,
+            604 strings with 4861 characters,
+and the built_in function-call counts, 602 in all, are:
+= -- 44
+> -- 32
+< -- 1
++ -- 10
+- -- 9
+* -- 53
+:= -- 99
+add.period$ -- 2
+call.type$ -- 1
+change.case$ -- 7
+chr.to.int$ -- 1
+cite$ -- 1
+duplicate$ -- 46
+empty$ -- 37
+format.name$ -- 13
+if$ -- 111
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 9
+newline$ -- 8
+num.names$ -- 5
+pop$ -- 20
+preamble$ -- 1
+purify$ -- 7
+quote$ -- 0
+skip$ -- 15
+stack$ -- 0
+substring$ -- 12
+swap$ -- 24
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 12
+warning$ -- 0
+while$ -- 3
+width$ -- 0
+write$ -- 16

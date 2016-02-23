@@ -1,0 +1,151 @@
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{appendix}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage[usenames, dvipsnames]{color}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\epstopdfsetup{update}
+\usepackage{helvet}
+\usepackage{hyperref}
+\usepackage{indentfirst}
+\usepackage{lscape}
+\usepackage{morefloats}
+\usepackage{natbib} \bibliographystyle{ecta}
+%\bibliographystyle{abbrvnat}\bibpunct{(}{)}{;}{a}{,}{,}
+\usepackage{setspace}
+\usepackage{subcaption}
+\usepackage[capposition=top]{floatrow}
+\usepackage{subfloat}
+\usepackage[latin1]{inputenc}
+\usepackage{tikz}
+%\usepackage[pdf]{pstricks}
+
+\usetikzlibrary{trees}
+\usetikzlibrary{decorations.markings}
+
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}
+\newtheorem{cor}{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}{Definition}
+
+%MARGINS
+\topmargin   =  0.0in
+\headheight  =  -0.3in
+\headsep     =  0.7in
+\oddsidemargin= 0.0in
+\evensidemargin=0.0in
+\textheight  =  9.0in
+\textwidth   =  6.45in
+% \setlength{\parindent}{4em}
+\setlength{\parskip}{1em}
+
+\newcommand{\fmt}{.eps}
+%\newcommand{\fmt}{.png}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=BlueViolet,
+  citecolor=BlueViolet,
+  filecolor=BlueViolet,
+  urlcolor=BlueViolet
+}
+
+\title{Gender and Quantity--Quality: Results from the Millennium Cohort Survey}
+\author{Sonia Bhalotra \and Damian Clarke \and Patrick Donnelly Moran}
+\date{\today}
+
+\begin{document}
+\sffamily
+\maketitle
+
+General point: With the MCS data we can look at the effect of additional births
+on child outcomes in a much richer way.  We have measures of both
+\textbf{Parental Investment} as well as much richer measures of
+\textbf{child outcomes} which come from cognitive tests.  Also, the child
+outcomes link quite well to the parental investment behaviours, so we can
+test whether:
+
+\[
+\text{Additional Births}\rightarrow\text{Lower Parental Investments}\rightarrow\text{Worse Child Outcomes}
+\]
+This is in line with Becker's original Q--Q formulation, in which the
+trade-off is explicitly mediated by parental investment behaviour.  It also
+has links to all of the newish papers on parental time use and child outcomes.
+
+We are particularly interested in the gender dynamic here, as empirically it
+seems like girls do worse when parents change their investment patterns after
+birth.  We will thus estimate the following two stage least squares specification:
+\begin{eqnarray}
+  fertility_j = \alpha_1 + \alpha_2 twins_j + \bm{X} + \bm{S} + \bm{H} + \varepsilon_j \\
+  y_{ij} = \beta_1 + \beta_2 \widehat{fertility}_j + \bm{X} + \bm{S} + \bm{H} + \varepsilon_j 
+\end{eqnarray}
+for child $i$ in family $j$.  This will be estimated seperately for male and female children.
+Outcome variable $y$ will consist of the parental investment and child outcome variables in
+the table below.
+\begin{table}[htpb!]
+\caption{Variables of Interest}
+  \begin{tabular}{l} \toprule
+  \textbf{Investment Variables}  \\
+  Does parent read to child $i$  \\
+  Does parent write with child $i$  \\
+  Did parent spend time when selecting school  \\
+  \textbf{Outcome Variables}  \\
+  Child $i$'s outcome on \ldots \\
+  \bottomrule
+  \end{tabular}
+\end{table}
+
+There is some evidence that the Q--Q trade-off may selectively affect boys and girls
+differently.  \citet{Juhnetal2015}
+
+\clearpage
+
+\section{Tables}
+\begin{landscape}
+\begin{table}[htpb!]
+  \begin{center}
+    \caption{Standardised Test Outcomes and Q-Q Trade-off}
+    \begin{tabular}{lcccccc} \toprule
+     & \multicolumn{3}{c}{Girls} & \multicolumn{3}{c}{Boys} \\ \cmidrule(r){2-4} \cmidrule(r){5-7}
+     & Reading & Writing & Patterns & Reading & Writing & Patterns \\ \midrule
+      Fertility & xx.xx & xx.xx & xx.xx & xx.xx & xx.xx & xx.xx \\
+                & (xx.xx) & (xx.xx) & (xx.xx) & (xx.xx) & (xx.xx) & (xx.xx) \\
+       & & & & & & \\
+      \midrule
+      First-Stage        & & & & & & \\
+      Test-state first stage        & & & & & & \\
+      Observations       & & & & &  & \\
+      \bottomrule
+      \multicolumn{7}{p{10cm}}{\begin{footnotesize}\textsc{Notes}  \end{footnotesize}}
+    \end{tabular}
+  \end{center}
+\end{table}
+\end{landscape}
+
+
+\clearpage
+
+\begin{landscape}
+	\input{../Results/Presentation/Table_outcomes.tex}
+\end{landscape}
+
+\clearpage
+
+\begin{landscape}
+	\input{../Results/Presentation/Table_investments.tex}
+\end{landscape}
+
+\clearpage
+\bibliography{./refs}
+
+
+\end{document}

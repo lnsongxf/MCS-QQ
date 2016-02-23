@@ -1,0 +1,12 @@
+\begin{thebibliography}{1}
+\newcommand{\enquote}[1]{``#1''}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[\protect\citeauthoryear{Juhn, Rubinstein, and Zuppann}{Juhn
+  et~al.}{2015}]{Juhnetal2015}
+\textsc{Juhn, C., Y.~Rubinstein, and C.~A. Zuppann} (2015): \enquote{{The
+  Quantity-Quality Trade-off and the Formation of Cogntive and Non-Cognitive
+  Skills},} NBER Working Papers 21824, National Bureau of Economic Research,
+  Inc.
+
+\end{thebibliography}

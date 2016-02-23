@@ -101,7 +101,7 @@ di $wt
 * TODO
 * (N r2, fmt(%9.0g %9.2f) label(Observations R2)) 
 #delimit ;
-local estopt cells(b(star fmt(%-9.3f)) se(fmt(%-9.3f) par([ ]) )) stats
+local estopt nonum cells(b(star fmt(%-9.3f)) se(fmt(%-9.3f) par([ ]) )) stats
              (N, fmt(%9.0g) label(Observations)) 
              starlevel ("*" 0.10 "**" 0.05 "***" 0.01) collabels(none) label;
 local enote  "Standard errors are reported in parentheses. ***p-value$<$0.01, **p-value$<$0.05, *p-value$<$0.01.";
@@ -615,29 +615,8 @@ if $IV==1{
 }
 
 ********************************************************************************
-**** (8) IV Interacted with Race
-****     Quality = a + b*fertilty + c*race + d*(race*fertility) + ... + u
+**** (8) IV (using twin at order n) - tables for IoE presentation
 ********************************************************************************
-
-if $IVrace==1{
-	
-}
-
-
-
-
-
-********************************************************************************
-**** (9) IV (using twin at order n) - tables for IoE presentation
-********************************************************************************
-
-* There are two measures of fertility: 
-* fert = natural + half siblings from mothers side
-* fertility_count_by_nat_siblings = fertility count excluding half siblings
-/*
-drop fert
-rename fertility_count_by_nat_siblings fert
-*/
 
 * I do not include cluster(MCSID) because our sample does not include non-singleton CMs
 if $IV_2016==1{
@@ -652,14 +631,11 @@ if $IV_2016==1{
 	
 	* Loop over all / female / male
 	foreach condition of local conditions {
-		
 		local condition_name = "``i''"	
-		* local out "${Tables}/IV`fSuffix'/`Prefix'-`condition_name'-`Suffix'.xls"
-		* cap rm "`out'"
-		* cap rm "${Tables}/IV`fSuffix'/`Prefix'-`condition_name'-`Suffix'.txt"
 		
-		
-		foreach n in two {
+		foreach n in three {
+			local record = "`n'"
+			
 			preserve
 			
 			keep `cond'&`condition'&`n'_plus==1
@@ -674,15 +650,7 @@ if $IV_2016==1{
 				
 				di "`n'"
 				eststo: ivregress 2sls `y' $base $age $H $S (fert=twin_`n'_fam) $wt
-				
-				sdfsdfd
-				
-				* Store outcomes (ie the first four variables)
-				
-				
-				
-				
-				local reg_count = `reg_count' + 1
+
 			}
 			
 			
@@ -701,35 +669,35 @@ if $IV_2016==1{
 	
 	lab var fert "Fertility"
 
-	lab var ZQ_Verbal_Sim "Verbal Similarities"
-	lab var ZQ_Number_Skills "Number Skills"
-	lab var ZQ_Word_Reading "Word Reading"
-	lab var ZQ_Pattern_Construction "Pattern Construction"
+	lab var ZQ_Verbal_Sim "Verbal"
+	lab var ZQ_Number_Skills "Mathematical"
+	lab var ZQ_Word_Reading "Reading"
+	lab var ZQ_Pattern_Construction "Patterns"
 	lab var ZQ_Help_Reading_Freq "Reading Help"
 	lab var ZQ_Help_Writing_Freq "Writing Help"
 	lab var ZQ_Proactive_School_Selection "Selects School"
 	
 	* Output estimates
 	#delimit ;
-	esttab est8 est9 est10 est11 est15 est16 est17 est18 using "$ESTOUT/Table_outcomes.tex", replace
+	esttab est8 est9 est10 est11 est15 est16 est17 est18 using "$ESTOUT/Table_outcomes_`record'.tex", replace
 	`estopt' booktabs keep(fert) mlabels(, depvar)
 	mgroups("Girls" "Boys", pattern(1 0 0 0 1 0 0 0)
 	prefix(\multicolumn{@span}{c}{) suffix(}) span erepeat(\cmidrule(lr){@span}))
-	title("Outcomes") 
+	title("Standardised Test Outcomes and Q-Q Trade-off") 
 	postfoot("\bottomrule\multicolumn{5}{p{14.6cm}}{\begin{footnotesize}        "
-	"Add in note here about sample, etc. `enote'                                "
+	"Notes: Verbal score is from the British Ability Scales, Second Edition, measured in Wave 5 of the MCS. Mathematical ability comes from NFER Number Skills, measured in Wave 4 of the MCS. Word Reading and Pattern Construction both come from the British Ability Scales in Wave 4 of the MCS. `enote'                                "
 	"\end{footnotesize}}\end{tabular}\end{table}") style(tex);
 	#delimit cr
 	
 	* Investments 
 	#delimit ;
-	esttab est12 est13 est14 est19 est20 est21 using "$ESTOUT/Table_investments.tex", replace
+	esttab est12 est13 est19 est20 using "$ESTOUT/Table_investments_`record'.tex", replace
 	`estopt' booktabs keep(fert) mlabels(, depvar)
-	mgroups("Girls" "Boys", pattern(1 0 0 1 0 0 0)
+	mgroups("Girls" "Boys", pattern(1 0 1 0 )
 	prefix(\multicolumn{@span}{c}{) suffix(}) span erepeat(\cmidrule(lr){@span}))
-	title("Investments") 
+	title("Parental Investments and Q-Q Trade-off") 
 	postfoot("\bottomrule\multicolumn{5}{p{14.6cm}}{\begin{footnotesize}        "
-	"Add in note here about sample, etc. `enote'                                "
+	"Notes: Reading Help measures the frequency with which a parent helps their child read during a five day week. Writing Help is measured similarly. Both are recorded in Wave 4 of the MCS. `enote'                                "
 	"\end{footnotesize}}\end{tabular}\end{table}") style(tex);
 	#delimit cr
 	estimates clear
@@ -743,3 +711,5 @@ if $IV_2016==1{
 
 		macro shift
 }
+
+
