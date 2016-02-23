@@ -29,7 +29,7 @@ global ESTOUT 	     "${Directory}/Results/Presentation"
 
 global zscores        1
 global OLS            0
-global IV             1
+global IV             0
 global IVrace         0
 global subsamples     0
 global fullcontrols   1
@@ -628,7 +628,7 @@ if $IVrace==1{
 
 
 ********************************************************************************
-**** (7) IV (using twin at order n), subsequent inclusion of twin predictors
+**** (9) IV (using twin at order n) - tables for IoE presentation
 ********************************************************************************
 
 * There are two measures of fertility: 
@@ -650,7 +650,7 @@ if $IV_2016==1{
 	local fstage ""
 	local OUT "$Tables/IV2016/`1'"
 	
-	* Loop over all / male / female
+	* Loop over all / female / male
 	foreach condition of local conditions {
 		
 		local condition_name = "``i''"	
@@ -661,20 +661,19 @@ if $IV_2016==1{
 		
 		foreach n in two {
 			preserve
-			di "test-1"
+			
 			keep `cond'&`condition'&`n'_plus==1
 			
-			di "test0"
+			
 			local reg_count = 1
 			foreach y of varlist $outcomes {
 				defineweight `y'
 				
-				di "test1"
 				* TODO: partial out the controls. might need to use ivreg2
 				* this will help with reporting R squareds
 				
+				di "`n'"
 				eststo: ivregress 2sls `y' $base $age $H $S (fert=twin_`n'_fam) $wt
-				* qui outreg2 fert $age $H $S using "`out'", excel append
 				
 				sdfsdfd
 				
@@ -697,12 +696,11 @@ if $IV_2016==1{
 	* We store est1 - est21
 	
 	* Both genders: est1 - est7
-	* Male: est8 - est14
-	* Female: est15 - est21
+	* Female: est8 - est14
+	* Male: est15 - est21
 	
 	lab var fert "Fertility"
-	
-	
+
 	lab var ZQ_Verbal_Sim "Verbal Similarities"
 	lab var ZQ_Number_Skills "Number Skills"
 	lab var ZQ_Word_Reading "Word Reading"
@@ -715,7 +713,7 @@ if $IV_2016==1{
 	#delimit ;
 	esttab est8 est9 est10 est11 est15 est16 est17 est18 using "$ESTOUT/Table_outcomes.tex", replace
 	`estopt' booktabs keep(fert) mlabels(, depvar)
-	mgroups("Boys" "Girls", pattern(1 0 0 0 1 0 0 0)
+	mgroups("Girls" "Boys", pattern(1 0 0 0 1 0 0 0)
 	prefix(\multicolumn{@span}{c}{) suffix(}) span erepeat(\cmidrule(lr){@span}))
 	title("Outcomes") 
 	postfoot("\bottomrule\multicolumn{5}{p{14.6cm}}{\begin{footnotesize}        "
@@ -723,12 +721,11 @@ if $IV_2016==1{
 	"\end{footnotesize}}\end{tabular}\end{table}") style(tex);
 	#delimit cr
 	
-	di "testaa"
 	* Investments 
 	#delimit ;
 	esttab est12 est13 est14 est19 est20 est21 using "$ESTOUT/Table_investments.tex", replace
 	`estopt' booktabs keep(fert) mlabels(, depvar)
-	mgroups("Boys" "Girls", pattern(1 0 0 1 0 0 0)
+	mgroups("Girls" "Boys", pattern(1 0 0 1 0 0 0)
 	prefix(\multicolumn{@span}{c}{) suffix(}) span erepeat(\cmidrule(lr){@span}))
 	title("Investments") 
 	postfoot("\bottomrule\multicolumn{5}{p{14.6cm}}{\begin{footnotesize}        "
@@ -736,16 +733,13 @@ if $IV_2016==1{
 	"\end{footnotesize}}\end{tabular}\end{table}") style(tex);
 	#delimit cr
 	estimates clear
-	
-	di "testbb"
-	
-	di "seeout using ${Tables}/IV`fSuffix'/`Prefix'-`condition_name'-`Suffix'.txt"
+		
+	* di "seeout using ${Tables}/IV`fSuffix'/`Prefix'-`condition_name'-`Suffix'.txt"
 	* seeout using "${Tables}/IV`fSuffix'/`Prefix'-`condition_name'-`Suffix'.txt"
 	
 	* estout f1fert f2fert f3fert f4fert f5fert f6fert f7fert f8fert f9fert f10fert f11fert f12fert using "`OUT'_first.xls", replace `estopt' `varlab' keep(twin_* )
 	* estout `fstage' using "`OUT'_first.xls", replace `estopt' `varlab' keep(twin_* $age $S $H)	
 	* estout `estimates' using "`OUT'.xls", replace `estopt' `varlab' keep(fert $age $S $H)
 
-		estimates clear
 		macro shift
 }
