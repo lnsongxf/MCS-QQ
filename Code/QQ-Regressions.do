@@ -16,6 +16,8 @@ foreach ado in ivreg2 outreg2 estout ranktest mat2txt plausexog {
 * global Directory /Users/pedm/Documents/jobs/Damian-Clarke
 * global Directory C:\Users\pedm\Documents\WindowsUbuntuDocs\MCS\MCS-QQ
 global Directory F:\MCS\MCS-QQ
+global Directory ~/investigacion/2015/MCS-QQ
+
 
 global Data          "${Directory}/Data"
 global Source        "${Directory}/Code"
@@ -24,6 +26,7 @@ global Graphs        "${Directory}/Results/Graphs"
 global Tables        "${Directory}/Results/Outreg"
 global ESTOUT 	     "${Directory}/Results/Presentation"
 
+log using "$Log/QQ-regressions.txt", text replace
 *******************************************************************************
 *** SWITCHES
 *******************************************************************************
@@ -669,100 +672,76 @@ if $IV==1{
 
 ********************************************************************************
 **** (8) IV (using twin at order n) - tables for IoE presentation
+**** Notes:
+****    - Do not include cluster(MCSID) here because sample does not include
+****      non-singleton CMs
+****    - Let's try partialling out the controls in the ivregress regression
+****      We could do this by hand, or use the "partial" option in ivreg2
 ********************************************************************************
+if $IV_2016==1 {
+    lab var fert                          "Fertility"
+    lab var ZQ_Verbal_Sim                 "Verbal"
+    lab var ZQ_Number_Skills              "Maths"
+    lab var ZQ_Word_Reading               "Reading"
+    lab var ZQ_Pattern_Construction       "Patterns"
+    lab var ZQ_Help_Reading_Freq          "Reading Help"
+    lab var ZQ_Help_Writing_Freq          "Writing Help"
+    lab var ZQ_Proactive_School_Selection "Selects School"
+    
+    foreach n in two three {
+        local record = "`n'"
 
-* I do not include cluster(MCSID) because our sample does not include non-singleton CMs
-if $IV_2016==1{
-	tokenize `fnames'
-	local i 1
-	local n1=1
-	local n2=2
-	local n3=3
-	local estimates ""
-	local fstage ""
-	local OUT "$Tables/IV2016/`1'"
-	
-	* Loop over all / female / male
-	foreach condition of local conditions {
-		local condition_name = "``i''"	
-		
-		foreach n in three {
-			local record = "`n'"
-			
-			preserve
-			
-			keep `cond'&`condition'&`n'_plus==1
-			
-			
-			local reg_count = 1
-			foreach y of varlist $outcomes {
-				defineweight `y'
-				
-				* TODO: partial out the controls. might need to use ivreg2
-				* this will help with reporting R squareds
-				
-				di "`n'"
-				eststo: ivregress 2sls `y' $base $age $H $S (fert=twin_`n'_fam) $wt
+        foreach condition of local conditions {
+            di "Estimating for `n'+: Subsample: `condition'"
 
-			}
-			
-			
-			restore
-		}
-		
-		
-		local ++i
+            preserve
+            
+            keep `cond'&`condition'&`n'_plus==1
+            local reg_count = 1
+            foreach y of varlist $outcomes {
+		defineweight `y'
+		eststo: ivregress 2sls `y' $base $age $H $S (fert=twin_`n'_fam) $wt
+            }			
+            restore
 	}
-	
-	* We store est1 - est21
 	
 	* Both genders: est1 - est7
 	* Female: est8 - est14
 	* Male: est15 - est21
 	
-	lab var fert "Fertility"
-
-	lab var ZQ_Verbal_Sim "Verbal"
-	lab var ZQ_Number_Skills "Mathematical"
-	lab var ZQ_Word_Reading "Reading"
-	lab var ZQ_Pattern_Construction "Patterns"
-	lab var ZQ_Help_Reading_Freq "Reading Help"
-	lab var ZQ_Help_Writing_Freq "Writing Help"
-	lab var ZQ_Proactive_School_Selection "Selects School"
-	
-	* Output estimates
 	#delimit ;
-	esttab est8 est9 est10 est11 est15 est16 est17 est18 using "$ESTOUT/Table_outcomes_`record'.tex", replace
+        esttab est8 est9 est10 est11 est15 est16 est17 est18
+        using "$ESTOUT/Table_outcomes_`record'.tex", replace
 	`estopt' booktabs keep(fert) mlabels(, depvar)
 	mgroups("Girls" "Boys", pattern(1 0 0 0 1 0 0 0)
-	prefix(\multicolumn{@span}{c}{) suffix(}) span erepeat(\cmidrule(lr){@span}))
-	title("Standardised Test Outcomes and Q-Q Trade-off") 
-	postfoot("\bottomrule\multicolumn{5}{p{14.6cm}}{\begin{footnotesize}        "
-	"Notes: Verbal score is from the British Ability Scales, Second Edition, measured in Wave 5 of the MCS. Mathematical ability comes from NFER Number Skills, measured in Wave 4 of the MCS. Word Reading and Pattern Construction both come from the British Ability Scales in Wave 4 of the MCS. `enote'                                "
-	"\end{footnotesize}}\end{tabular}\end{table}") style(tex);
-	#delimit cr
-	
-	* Investments 
-	#delimit ;
-	esttab est12 est13 est19 est20 using "$ESTOUT/Table_investments_`record'.tex", replace
+        prefix(\multicolumn{@span}{c}{) suffix(})
+        span erepeat(\cmidrule(lr){@span}))
+	title("Standardised Test Outcomes and Q-Q Trade-off (`n' plus)") 
+	postfoot("\bottomrule\multicolumn{9}{p{15.8cm}}{\begin{footnotesize}"
+                 "Notes: Verbal score is from the British Ability Scales,   "
+                 "Second Edition, measured in Wave 5 of the MCS.            "
+                 "Mathematical ability comes from NFER Number Skills,       "
+                 "measured in Wave 4 of the MCS. Word Reading and Pattern   "
+                 "Construction both come from the British Ability Scales in "
+                 "Wave 4 of the MCS. `enote'                                "
+                 "\end{footnotesize}}\end{tabular}\end{table}") style(tex);
+
+        esttab est12 est13 est19 est20 
+        using "$ESTOUT/Table_investments_`record'.tex", replace
 	`estopt' booktabs keep(fert) mlabels(, depvar)
 	mgroups("Girls" "Boys", pattern(1 0 1 0 )
-	prefix(\multicolumn{@span}{c}{) suffix(}) span erepeat(\cmidrule(lr){@span}))
-	title("Parental Investments and Q-Q Trade-off") 
-	postfoot("\bottomrule\multicolumn{5}{p{14.6cm}}{\begin{footnotesize}        "
-	"Notes: Reading Help measures the frequency with which a parent helps their child read during a five day week. Writing Help is measured similarly. Both are recorded in Wave 4 of the MCS. `enote'                                "
-	"\end{footnotesize}}\end{tabular}\end{table}") style(tex);
+        prefix(\multicolumn{@span}{c}{) suffix(})
+        span erepeat(\cmidrule(lr){@span}))
+	title("Parental Investments and Q-Q Trade-off (`n' plus)") 
+	postfoot("\bottomrule\multicolumn{5}{p{12.6cm}}{\begin{footnotesize}"
+                 "Notes: Reading Help measures the frequency with which a   "
+                 "parent helps their child read during a five day week.     "
+                 "Writing Help is measured similarly. Both are recorded in  "
+                 "Wave 4 of the MCS. `enote'                                "
+                 "\end{footnotesize}}\end{tabular}\end{table}") style(tex);
 	#delimit cr
 	estimates clear
-		
-	* di "seeout using ${Tables}/IV`fSuffix'/`Prefix'-`condition_name'-`Suffix'.txt"
-	* seeout using "${Tables}/IV`fSuffix'/`Prefix'-`condition_name'-`Suffix'.txt"
-	
-	* estout f1fert f2fert f3fert f4fert f5fert f6fert f7fert f8fert f9fert f10fert f11fert f12fert using "`OUT'_first.xls", replace `estopt' `varlab' keep(twin_* )
-	* estout `fstage' using "`OUT'_first.xls", replace `estopt' `varlab' keep(twin_* $age $S $H)	
-	* estout `estimates' using "`OUT'.xls", replace `estopt' `varlab' keep(fert $age $S $H)
-
-		macro shift
+    }
 }
 
 
