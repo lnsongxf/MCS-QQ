@@ -77,6 +77,10 @@ global OLS            0
 global IV             0
 global IV_2016        1
 
+*******************************************************************************
+*** OTHER OPTIONS
+*******************************************************************************
+
 * VARIABLES
 global outcomes Q_Verbal_Similarities Q_Number_Skills Q_Word_Reading Q_Pattern_Construction Q_Help_Reading_Freq Q_Help_Writing_Freq Q_Proactive_School_Selection
 global base malec _country* _yb* _dob*
