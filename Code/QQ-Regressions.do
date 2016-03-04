@@ -24,27 +24,58 @@ global Graphs        "${Directory}/Results/Graphs"
 global Tables        "${Directory}/Results/Outreg"
 global ESTOUT 	     "${Directory}/Results/Presentation"
 
-* SWITCHES (1 if run, else not run)
-* But dataV must be V1, V2, or Aug7
+*******************************************************************************
+*** SWITCHES
+*******************************************************************************
 
-global zscores        1
-global OLS            0
-global IV             0
-global IVrace         0
-global subsamples     0
-global fullcontrols   1
-global fixmissing1    1
+* DIAGNOSTIC SWITCHES
+* evalmissing    1  = Investigate missing values
+* twin           1  = Investigate the twin predictors
+* sumstats       1  = Produce summary statistics
+* graphs         1  = Produce graphs (twins by birth order, twins by family type, twins by age)
+* recreateData   1  = Generate full dataset from raw mcs files. There's really no need to set this to 1
+* fastTesting    1  = Override other settings and use fewer outcomes / conditions 
+*                     Only used so that I can debug faster. I would just set it to 0 always
+
+* SPECIFICATIONS
+* dataV          V2 = Use the data that includes half siblings in birth order and fertility counts. Options must be V1, V2, or Aug7
+* zscores        1  = all variables will be transformed to mean 0 and sd 1
+* subsamples     1  = Used in conjunction with IV 2014. Loops through subsamples 
+*                     Current subsamples: income_quint and malec. 
+*                     But can be edited to include other if statements. Does not impact IV_2016
+* fullcontrols   1  = Used in conjunction with IV 2014. Produce estimates using MCS only controls 
+*                     If fullcontrols==0, we produce estimates using the same controls available in DHS
+* fixmissing1    1  = For any missing control variables, replace . with 0 and add a dummy to the regression.
+*                     Note: this will automatically add variables to $H
+
+* REGRESSIONS TO RUN
+* OLS            1  = Run biased OLS regressions 
+* IV             1  = Run IV using twin order (this was used to produce the Oct 2014 charts)
+* IV_2016        1  = Produce tables for IoE talk
+
+*******************************************************************************
+*** SWITCHES
+*******************************************************************************
+
+* DIAGNOSTIC SWITCHES
 global evalmissing    0
 global twin           0
 global sumstats       0
 global graphs         0
-global fastTesting    0
 global recreateData   0
-global dataV          V2
-global IV_2016        1
+global fastTesting    0
 
-* Note: If fullcontrols==0, we produce estimates using the same controls available in DHS
-* These estimates are stored in the folder Outreg-DHScontrols
+* SPECIFICATIONS
+global dataV          V2
+global zscores        1
+global subsamples     0
+global fullcontrols   1
+global fixmissing1    1
+
+* REGRESSIONS TO RUN
+global OLS            0
+global IV             0
+global IV_2016        1
 
 * VARIABLES
 global outcomes Q_Verbal_Similarities Q_Number_Skills Q_Word_Reading Q_Pattern_Construction Q_Help_Reading_Freq Q_Help_Writing_Freq Q_Proactive_School_Selection
