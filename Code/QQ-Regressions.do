@@ -281,19 +281,37 @@ qui tab bord, gen(_bord)
 qui tab CM_DOB_Month, gen(_dob_m)
 qui tab CM_DOB_Year, gen(_dob_y)
 
-* Generate Z scores of outcome variables
-* Z = (y - mean(y | age)) / sd(y | age)
+*******************************************************************************
+*** Generate Z scores of outcome variables
+*** Z = (y - mean(y | age)) / sd(y | age)
+*******************************************************************************
 global ZScores
 foreach var of varlist $outcomes {
 	if `var'== Q_Verbal_Similarities {
-		sort CM_age_interview5
-		qui gen decile=group(10)
+		local cm_age "CM_age_interview5"
 	}
 	else{
-		sort CM_age_interview4
-		qui gen decile=group(10)
+		local cm_age "CM_age_interview4"
 	}
 	
+	* (1) Generate age deciles
+	* Notice that since `cm_age' is a step function, there are times where kids
+	* with the same cm_age end up in different deciles. I correct for this later.
+	sort `cm_age'
+	qui gen decile=group(10) if `cm_age' !=. & `cm_age' != -1
+		
+	* (2) Correct the deciles -- don't allow any observations with the same age at interview to be in different deciles
+	gen decile_corrected = .
+	by decile, sort: egen m = max(`cm_age')
+	forvalues ii = 1/9{
+		qui sum m if decile == `ii'
+		local decile_cutoff = `r(mean)'
+		qui replace decile_corrected = `ii' if `cm_age' <= `decile_cutoff' & `cm_age' != . & `cm_age' != -1 & decile_corrected == .
+	}
+	drop decile m
+	rename decile_corrected decile
+	
+	* (3) Generate Z scores by age decile
 	sort decile
 	by decile: egen `var'_sd=sd(`var')
 	by decile: egen `var'_m=mean(`var')
