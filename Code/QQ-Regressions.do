@@ -15,7 +15,8 @@ foreach ado in ivreg2 outreg2 estout ranktest mat2txt plausexog {
 * DIRECTORIES
 * global Directory /Users/pedm/Documents/jobs/Damian-Clarke
 * global Directory C:\Users\pedm\Documents\WindowsUbuntuDocs\MCS\MCS-QQ
-global Directory F:\MCS\MCS-QQ
+* global Directory F:\MCS\MCS-QQ
+global Directory C:\Users\pedm\Documents\My Research\MCS\MCS-QQ
 
 global Data          "${Directory}/Data"
 global Source        "${Directory}/Code"
