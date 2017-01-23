@@ -18,6 +18,8 @@ foreach ado in ivreg2 outreg2 estout ranktest mat2txt plausexog {
 * global Directory F:\MCS\MCS-QQ
 global Directory C:\Users\pedm\Documents\My Research\MCS\MCS-QQ
 
+
+
 global Data          "${Directory}/Data"
 global Source        "${Directory}/Code"
 global Log           "${Directory}/Log"
@@ -25,27 +27,63 @@ global Graphs        "${Directory}/Results/Graphs"
 global Tables        "${Directory}/Results/Outreg"
 global ESTOUT 	     "${Directory}/Results/Presentation"
 
-* SWITCHES (1 if run, else not run)
-* But dataV must be V1, V2, or Aug7
+log using "$Log/QQ-regressions.txt", text replace
+*******************************************************************************
+*** SWITCHES
+*******************************************************************************
 
-global zscores        1
-global OLS            0
-global IV             0
-global IVrace         0
-global subsamples     0
-global fullcontrols   1
-global fixmissing1    1
+* DIAGNOSTIC SWITCHES
+* evalmissing    1  = Investigate missing values
+* twin           1  = Investigate the twin predictors
+* sumstats       1  = Produce summary statistics
+* graphs         1  = Produce graphs (twins by birth order, twins by family type, twins by age)
+* recreateData   1  = Generate full dataset from raw mcs files. There's really no need to set this to 1
+* fastTesting    1  = Override other settings and use fewer outcomes / conditions 
+*                     Only used so that I can debug faster. I would just set it to 0 always
+
+* SPECIFICATIONS
+* dataV          V2 = Use the data that includes half siblings in birth order and fertility counts. Options must be V1, V2, or Aug7
+* zscores        1  = all variables will be transformed to mean 0 and sd 1
+* subsamples     1  = Used in conjunction with IV 2014. Loops through subsamples 
+*                     Current subsamples: income_quint and malec. 
+*                     But can be edited to include other if statements. Does not impact IV_2016
+* fullcontrols   1  = Used in conjunction with IV 2014. Produce estimates using MCS only controls 
+*                     If fullcontrols==0, we produce estimates using the same controls available in DHS
+* fixmissing1    1  = For any missing control variables, replace . with 0 and add a dummy to the regression.
+*                     Note: this will automatically add variables to $H
+
+* REGRESSIONS TO RUN
+* OLS            1  = Run biased OLS regressions 
+* IV             1  = Run IV using twin order (this was used to produce the Oct 2014 charts)
+* IV_2016        1  = Produce tables for IoE talk
+
+*******************************************************************************
+*** SWITCHES
+*******************************************************************************
+
+* DIAGNOSTIC SWITCHES
 global evalmissing    0
 global twin           0
 global sumstats       0
 global graphs         0
-global fastTesting    0
 global recreateData   0
+global fastTesting    0
+
+* SPECIFICATIONS
 global dataV          V2
+global zscores        1
+global subsamples     0
+global fullcontrols   1
+global fixmissing1    1
+
+* REGRESSIONS TO RUN
+global OLS            0
+global IV             0
 global IV_2016        1
 
-* Note: If fullcontrols==0, we produce estimates using the same controls available in DHS
-* These estimates are stored in the folder Outreg-DHScontrols
+*******************************************************************************
+*** OTHER OPTIONS
+*******************************************************************************
 
 * VARIABLES
 global outcomes Q_Verbal_Similarities Q_Number_Skills Q_Word_Reading Q_Pattern_Construction Q_Help_Reading_Freq Q_Help_Writing_Freq Q_Proactive_School_Selection
@@ -247,19 +285,37 @@ qui tab bord, gen(_bord)
 qui tab CM_DOB_Month, gen(_dob_m)
 qui tab CM_DOB_Year, gen(_dob_y)
 
-* Generate Z scores of outcome variables
-* Z = (y - mean(y | age)) / sd(y | age)
+*******************************************************************************
+*** Generate Z scores of outcome variables
+*** Z = (y - mean(y | age)) / sd(y | age)
+*******************************************************************************
 global ZScores
 foreach var of varlist $outcomes {
 	if `var'== Q_Verbal_Similarities {
-		sort CM_age_interview5
-		qui gen decile=group(10)
+		local cm_age "CM_age_interview5"
 	}
 	else{
-		sort CM_age_interview4
-		qui gen decile=group(10)
+		local cm_age "CM_age_interview4"
 	}
 	
+	* (1) Generate age deciles
+	* Notice that since `cm_age' is a step function, there are times where kids
+	* with the same cm_age end up in different deciles. I correct for this later.
+	sort `cm_age'
+	qui gen decile=group(10) if `cm_age' !=. & `cm_age' != -1
+		
+	* (2) Correct the deciles -- don't allow any observations with the same age at interview to be in different deciles
+	gen decile_corrected = .
+	by decile, sort: egen m = max(`cm_age')
+	forvalues ii = 1/9{
+		qui sum m if decile == `ii'
+		local decile_cutoff = `r(mean)'
+		qui replace decile_corrected = `ii' if `cm_age' <= `decile_cutoff' & `cm_age' != . & `cm_age' != -1 & decile_corrected == .
+	}
+	drop decile m
+	rename decile_corrected decile
+	
+	* (3) Generate Z scores by age decile
 	sort decile
 	by decile: egen `var'_sd=sd(`var')
 	by decile: egen `var'_m=mean(`var')
@@ -617,100 +673,76 @@ if $IV==1{
 
 ********************************************************************************
 **** (8) IV (using twin at order n) - tables for IoE presentation
+**** Notes:
+****    - Do not include cluster(MCSID) here because sample does not include
+****      non-singleton CMs
+****    - Let's try partialling out the controls in the ivregress regression
+****      We could do this by hand, or use the "partial" option in ivreg2
 ********************************************************************************
+if $IV_2016==1 {
+    lab var fert                          "Fertility"
+    lab var ZQ_Verbal_Sim                 "Verbal"
+    lab var ZQ_Number_Skills              "Maths"
+    lab var ZQ_Word_Reading               "Reading"
+    lab var ZQ_Pattern_Construction       "Patterns"
+    lab var ZQ_Help_Reading_Freq          "Reading Help"
+    lab var ZQ_Help_Writing_Freq          "Writing Help"
+    lab var ZQ_Proactive_School_Selection "Selects School"
+    
+    foreach n in two three {
+        local record = "`n'"
 
-* I do not include cluster(MCSID) because our sample does not include non-singleton CMs
-if $IV_2016==1{
-	tokenize `fnames'
-	local i 1
-	local n1=1
-	local n2=2
-	local n3=3
-	local estimates ""
-	local fstage ""
-	local OUT "$Tables/IV2016/`1'"
-	
-	* Loop over all / female / male
-	foreach condition of local conditions {
-		local condition_name = "``i''"	
-		
-		foreach n in three {
-			local record = "`n'"
-			
-			preserve
-			
-			keep `cond'&`condition'&`n'_plus==1
-			
-			
-			local reg_count = 1
-			foreach y of varlist $outcomes {
-				defineweight `y'
-				
-				* TODO: partial out the controls. might need to use ivreg2
-				* this will help with reporting R squareds
-				
-				di "`n'"
-				eststo: ivregress 2sls `y' $base $age $H $S (fert=twin_`n'_fam) $wt
+        foreach condition of local conditions {
+            di "Estimating for `n'+: Subsample: `condition'"
 
-			}
-			
-			
-			restore
-		}
-		
-		
-		local ++i
+            preserve
+            
+            keep `cond'&`condition'&`n'_plus==1
+            local reg_count = 1
+            foreach y of varlist $outcomes {
+		defineweight `y'
+		eststo: ivregress 2sls `y' $base $age $H $S (fert=twin_`n'_fam) $wt
+            }			
+            restore
 	}
-	
-	* We store est1 - est21
 	
 	* Both genders: est1 - est7
 	* Female: est8 - est14
 	* Male: est15 - est21
 	
-	lab var fert "Fertility"
-
-	lab var ZQ_Verbal_Sim "Verbal"
-	lab var ZQ_Number_Skills "Mathematical"
-	lab var ZQ_Word_Reading "Reading"
-	lab var ZQ_Pattern_Construction "Patterns"
-	lab var ZQ_Help_Reading_Freq "Reading Help"
-	lab var ZQ_Help_Writing_Freq "Writing Help"
-	lab var ZQ_Proactive_School_Selection "Selects School"
-	
-	* Output estimates
 	#delimit ;
-	esttab est8 est9 est10 est11 est15 est16 est17 est18 using "$ESTOUT/Table_outcomes_`record'.tex", replace
+        esttab est8 est9 est10 est11 est15 est16 est17 est18
+        using "$ESTOUT/Table_outcomes_`record'.tex", replace
 	`estopt' booktabs keep(fert) mlabels(, depvar)
 	mgroups("Girls" "Boys", pattern(1 0 0 0 1 0 0 0)
-	prefix(\multicolumn{@span}{c}{) suffix(}) span erepeat(\cmidrule(lr){@span}))
-	title("Standardised Test Outcomes and Q-Q Trade-off") 
-	postfoot("\bottomrule\multicolumn{5}{p{14.6cm}}{\begin{footnotesize}        "
-	"Notes: Verbal score is from the British Ability Scales, Second Edition, measured in Wave 5 of the MCS. Mathematical ability comes from NFER Number Skills, measured in Wave 4 of the MCS. Word Reading and Pattern Construction both come from the British Ability Scales in Wave 4 of the MCS. `enote'                                "
-	"\end{footnotesize}}\end{tabular}\end{table}") style(tex);
-	#delimit cr
-	
-	* Investments 
-	#delimit ;
-	esttab est12 est13 est19 est20 using "$ESTOUT/Table_investments_`record'.tex", replace
+        prefix(\multicolumn{@span}{c}{) suffix(})
+        span erepeat(\cmidrule(lr){@span}))
+	title("Standardised Test Outcomes and Q-Q Trade-off (`n' plus)") 
+	postfoot("\bottomrule\multicolumn{9}{p{15.8cm}}{\begin{footnotesize}"
+                 "Notes: Verbal score is from the British Ability Scales,   "
+                 "Second Edition, measured in Wave 5 of the MCS.            "
+                 "Mathematical ability comes from NFER Number Skills,       "
+                 "measured in Wave 4 of the MCS. Word Reading and Pattern   "
+                 "Construction both come from the British Ability Scales in "
+                 "Wave 4 of the MCS. `enote'                                "
+                 "\end{footnotesize}}\end{tabular}\end{table}") style(tex);
+
+        esttab est12 est13 est19 est20 
+        using "$ESTOUT/Table_investments_`record'.tex", replace
 	`estopt' booktabs keep(fert) mlabels(, depvar)
 	mgroups("Girls" "Boys", pattern(1 0 1 0 )
-	prefix(\multicolumn{@span}{c}{) suffix(}) span erepeat(\cmidrule(lr){@span}))
-	title("Parental Investments and Q-Q Trade-off") 
-	postfoot("\bottomrule\multicolumn{5}{p{14.6cm}}{\begin{footnotesize}        "
-	"Notes: Reading Help measures the frequency with which a parent helps their child read during a five day week. Writing Help is measured similarly. Both are recorded in Wave 4 of the MCS. `enote'                                "
-	"\end{footnotesize}}\end{tabular}\end{table}") style(tex);
+        prefix(\multicolumn{@span}{c}{) suffix(})
+        span erepeat(\cmidrule(lr){@span}))
+	title("Parental Investments and Q-Q Trade-off (`n' plus)") 
+	postfoot("\bottomrule\multicolumn{5}{p{12.6cm}}{\begin{footnotesize}"
+                 "Notes: Reading Help measures the frequency with which a   "
+                 "parent helps their child read during a five day week.     "
+                 "Writing Help is measured similarly. Both are recorded in  "
+                 "Wave 4 of the MCS. `enote'                                "
+                 "\end{footnotesize}}\end{tabular}\end{table}") style(tex);
 	#delimit cr
 	estimates clear
-		
-	* di "seeout using ${Tables}/IV`fSuffix'/`Prefix'-`condition_name'-`Suffix'.txt"
-	* seeout using "${Tables}/IV`fSuffix'/`Prefix'-`condition_name'-`Suffix'.txt"
-	
-	* estout f1fert f2fert f3fert f4fert f5fert f6fert f7fert f8fert f9fert f10fert f11fert f12fert using "`OUT'_first.xls", replace `estopt' `varlab' keep(twin_* )
-	* estout `fstage' using "`OUT'_first.xls", replace `estopt' `varlab' keep(twin_* $age $S $H)	
-	* estout `estimates' using "`OUT'.xls", replace `estopt' `varlab' keep(fert $age $S $H)
-
-		macro shift
+    }
 }
 
 
