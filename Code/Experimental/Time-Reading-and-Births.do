@@ -39,10 +39,14 @@ gen new_sibs_pre_wave4 = DDTOTS00 - CDTOTS00
 lab var new_sibs_pre_wave4 "Number of new siblings btwn waves 3 and 4"
 gen new_sibs_pre_wave3 = CDTOTS00 - BDTOTS00
 lab var new_sibs_pre_wave3 "Number of new siblings btwn waves 2 and 3"
+gen new_sibs_pre_wave2 = BDTOTS00 - ADTOTS00
+lab var new_sibs_pre_wave2 "Number of new siblings btwn waves 1 and 2"
+
 
 * Drop the observations that don't make sense (negative change in siblings)
 drop if new_sibs_pre_wave4 < 0 
 drop if new_sibs_pre_wave3 < 0 
+drop if new_sibs_pre_wave2 < 0 
 
 * Drop the observations that dont make sense (N/A result on reading question)
 replace read_cm1_wave2 = . if read_cm1_wave2 <= 0
@@ -51,10 +55,13 @@ replace read_cm1_wave4 = . if read_cm1_wave4 <= 0
 
 * Generate categories based on new siblings
 * tab new_sibs_pre_wave4 new_sibs_pre_wave3
-gen category = "No new sibs" if new_sibs_pre_wave3 == 0 & new_sibs_pre_wave4 == 0
-replace category = "New sibs (btwn 2 & 3)" if new_sibs_pre_wave3 > 0 & new_sibs_pre_wave4 == 0
-replace category = "New sibs (btwn 3 & 4)" if new_sibs_pre_wave3 == 0 & new_sibs_pre_wave4 > 0
-replace category = "New sibs (btwn both)" if new_sibs_pre_wave3 > 0 & new_sibs_pre_wave4 > 0
+gen category = "No new sibs" if new_sibs_pre_wave3 == 0 & new_sibs_pre_wave4 == 0 & new_sibs_pre_wave2 == 0
+replace category = "New sibs (btwn 1 & 2)" if new_sibs_pre_wave3 == 0 & new_sibs_pre_wave4 == 0 & new_sibs_pre_wave2 > 0
+replace category = "New sibs (btwn 2 & 3)" if new_sibs_pre_wave3 > 0 & new_sibs_pre_wave4 == 0 & new_sibs_pre_wave2 == 0
+replace category = "New sibs (btwn 3 & 4)" if new_sibs_pre_wave3 == 0 & new_sibs_pre_wave4 > 0 & new_sibs_pre_wave2 == 0
+replace category = "New sibs (btwn both)" if new_sibs_pre_wave3 > 0 & new_sibs_pre_wave4 > 0 & new_sibs_pre_wave2 == 0
+drop if new_sibs_pre_wave2 > 0
+
 tab category
 
 * drop category
@@ -73,9 +80,6 @@ tab category
 * replace read_cm1_wave4 = 0 if read_cm1_wave4 > 2
 
 collapse (mean) read_cm1_wave*, by(category)
-
-edit 
-sdfsdf
 
 reshape long read_cm1_wave, i(category) j(wave)
 encode category, gen(c)
