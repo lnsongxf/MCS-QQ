@@ -74,6 +74,9 @@ tab category
 
 collapse (mean) read_cm1_wave*, by(category)
 
+edit 
+sdfsdf
+
 reshape long read_cm1_wave, i(category) j(wave)
 encode category, gen(c)
 xtset c wave
