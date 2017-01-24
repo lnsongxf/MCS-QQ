@@ -60,9 +60,9 @@ tab category
 * drop category
 * gen category = "all"
 
-replace read_cm1_wave2 = 0 if read_cm1_wave2 > 1
-replace read_cm1_wave3 = 0 if read_cm1_wave3 > 1
-replace read_cm1_wave4 = 0 if read_cm1_wave4 > 1
+* replace read_cm1_wave2 = 0 if read_cm1_wave2 > 1
+* replace read_cm1_wave3 = 0 if read_cm1_wave3 > 1
+* replace read_cm1_wave4 = 0 if read_cm1_wave4 > 1
 
 
 * replace read_cm1_wave2 = 1 if read_cm1_wave2 == 2
@@ -77,8 +77,8 @@ collapse (mean) read_cm1_wave*, by(category)
 reshape long read_cm1_wave, i(category) j(wave)
 encode category, gen(c)
 xtset c wave
-* lab var read_cm1_wave "Avg Reading to Child (1=everyday; 6=never)"
-lab var read_cm1_wave "Percent of Mothers Reading Everyday to CM"
+lab var read_cm1_wave "Avg Reading to Child"
+* lab var read_cm1_wave "Percent of Mothers Reading Everyday to CM"
 
-xtline read_cm1_wave, overlay title("Reading Everyday to CM") 
+xtline read_cm1_wave, overlay title("Reading to CM Measure (1=everyday; 6=never)") 
 * subtitle("Sample: No previous children")
